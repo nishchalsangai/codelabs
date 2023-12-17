@@ -14,10 +14,11 @@ import 'assets.dart';
 import 'title_screen/title_screen.dart';
 
 void main() {
-  if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
-    WidgetsFlutterBinding.ensureInitialized();
-    setWindowMinSize(const Size(800, 500));
-  }
+   WidgetsFlutterBinding.ensureInitialized();
+  // if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
+   
+  //   setWindowMinSize(const Size(800, 500));
+  // }
   Animate.restartOnHotReload = true;
   runApp(
     FutureProvider<FragmentPrograms?>(
@@ -35,6 +36,7 @@ class NextGenApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       themeMode: ThemeMode.dark,
+      debugShowCheckedModeBanner: false,
       darkTheme: ThemeData(brightness: Brightness.dark),
       home: const TitleScreen(),
     );

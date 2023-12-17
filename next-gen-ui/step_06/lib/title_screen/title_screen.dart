@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../assets.dart';
+import '../common/responsive.dart';
 import '../orb_shader/orb_shader_config.dart';
 import '../orb_shader/orb_shader_widget.dart';
 import '../styles.dart';
@@ -114,9 +115,11 @@ class _TitleScreenState extends State<TitleScreen>
   void _handleDifficultyFocused(int? value) {
     setState(() {
       _difficultyOverride = value;
+
       if (value == null) {
         _minOrbEnergy = _getMinEnergyForDifficulty(_difficulty);
       } else {
+        _difficulty = value;
         _minOrbEnergy = _getMinEnergyForDifficulty(value);
       }
     });
@@ -141,105 +144,175 @@ class _TitleScreenState extends State<TitleScreen>
             orbColor: _orbColor,
             emitColor: _emitColor,
             builder: (_, orbColor, emitColor) {
-              return Stack(
-                children: [
-                  /// Bg-Base
-                  Image.asset(AssetPaths.titleBgBase),
-
-                  /// Bg-Receive
-                  _LitImage(
-                    color: orbColor,
-                    imgSrc: AssetPaths.titleBgReceive,
-                    pulseEffect: _pulseEffect,
-                    lightAmt: _finalReceiveLightAmt,
-                  ),
-
-                  /// Orb
-                  Positioned.fill(
-                    child: Stack(
-                      children: [
-                        // Orb
-                        OrbShaderWidget(
-                          key: _orbKey,
-                          mousePos: _mousePos,
-                          minEnergy: _minOrbEnergy,
-                          config: OrbShaderConfig(
-                            ambientLightColor: orbColor,
-                            materialColor: orbColor,
-                            lightColor: orbColor,
-                          ),
-                          onUpdate: (energy) => setState(() {
-                            _orbEnergy = energy;
-                          }),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  /// Mg-Base
-                  _LitImage(
-                    imgSrc: AssetPaths.titleMgBase,
-                    color: orbColor,
-                    pulseEffect: _pulseEffect,
-                    lightAmt: _finalReceiveLightAmt,
-                  ),
-
-                  /// Mg-Receive
-                  _LitImage(
-                    imgSrc: AssetPaths.titleMgReceive,
-                    color: orbColor,
-                    pulseEffect: _pulseEffect,
-                    lightAmt: _finalReceiveLightAmt,
-                  ),
-
-                  /// Mg-Emit
-                  _LitImage(
-                    imgSrc: AssetPaths.titleMgEmit,
-                    color: emitColor,
-                    pulseEffect: _pulseEffect,
-                    lightAmt: _finalEmitLightAmt,
-                  ),
-
-                  /// Particle Field
-                  Positioned.fill(
-                    child: IgnorePointer(
-                      child: ParticleOverlay(
-                        color: orbColor,
-                        energy: _orbEnergy,
+              return Responsive(
+                  smallScreen: Stack(
+                    children: [
+                      Image.asset(
+                        AssetPaths.titleBgBase,
+                        height: MediaQuery.of(context).size.height * 1,
+                        fit: BoxFit.cover,
                       ),
-                    ),
-                  ),
+                      Positioned.fill(
+                        child: Stack(
+                          children: [
+                            // Orb
+                            OrbShaderWidget(
+                              key: _orbKey,
+                              mousePos: _mousePos,
+                              minEnergy: _minOrbEnergy,
+                              config: OrbShaderConfig(
+                                ambientLightColor: orbColor,
+                                materialColor: orbColor,
+                                lightColor: orbColor,
+                              ),
+                              onUpdate: (energy) => setState(() {
+                                _orbEnergy = energy;
+                              }),
+                            ),
 
-                  /// Fg-Rocks
-                  Image.asset(AssetPaths.titleFgBase),
+                            Center(
+                              child: Image.asset(
+                                imageAssets[_difficulty],
+                                height: 70,
+                                width: 70,
+                                color: _difficulty != 0
+                                    ? Colors.grey.withOpacity(0.5)
+                                    : Colors.black.withOpacity(0.5),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
 
-                  /// Fg-Receive
-                  _LitImage(
-                    imgSrc: AssetPaths.titleFgReceive,
-                    color: orbColor,
-                    pulseEffect: _pulseEffect,
-                    lightAmt: _finalReceiveLightAmt,
+                      /// UI
+                      Positioned.fill(
+                        child: TitleScreenUi(
+                          difficulty: _difficulty,
+                          onDifficultyFocused: _handleDifficultyFocused,
+                          onDifficultyPressed: _handleDifficultyPressed,
+                          onStartPressed: _handleStartPressed,
+                        ),
+                      ),
+                    ],
                   ),
+                  bigScreen: Stack(
+                    children: [
+                      /// Bg-Base
+                      Image.asset(AssetPaths.titleBgBase),
 
-                  /// Fg-Emit
-                  _LitImage(
-                    imgSrc: AssetPaths.titleFgEmit,
-                    color: emitColor,
-                    pulseEffect: _pulseEffect,
-                    lightAmt: _finalEmitLightAmt,
-                  ),
+                      /// Bg-Receive
+                      _LitImage(
+                        color: orbColor,
+                        imgSrc: AssetPaths.titleBgReceive,
+                        pulseEffect: _pulseEffect,
+                        lightAmt: _finalReceiveLightAmt,
+                      ),
 
-                  /// UI
-                  Positioned.fill(
-                    child: TitleScreenUi(
-                      difficulty: _difficulty,
-                      onDifficultyFocused: _handleDifficultyFocused,
-                      onDifficultyPressed: _handleDifficultyPressed,
-                      onStartPressed: _handleStartPressed,
-                    ),
-                  ),
-                ],
-              ).animate().fadeIn(duration: 1.seconds, delay: .3.seconds);
+                      /// Orb
+                      Positioned.fill(
+                        child: Stack(
+                          children: [
+                            // Orb
+                            OrbShaderWidget(
+                              key: _orbKey,
+                              mousePos: _mousePos,
+                              minEnergy: _minOrbEnergy,
+                              config: OrbShaderConfig(
+                                ambientLightColor: orbColor,
+                                materialColor: orbColor,
+                                lightColor: orbColor,
+                              ),
+                              onUpdate: (energy) => setState(() {
+                                _orbEnergy = energy;
+                              }),
+                            ),
+
+                            Center(
+                                child: Image.asset(
+                              imageAssets[_difficulty],
+                              height: 200,
+                              width: 200,
+                              color: _difficulty != 0
+                                  ? Colors.grey.withOpacity(0.5)
+                                  : Colors.black.withOpacity(0.5),
+                            )),
+
+                            Positioned.fill(
+                              child: TitleScreenUi(
+                                difficulty: _difficulty,
+                                onDifficultyFocused: _handleDifficultyFocused,
+                                onDifficultyPressed: _handleDifficultyPressed,
+                                onStartPressed: _handleStartPressed,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      /// Mg-Base
+                      _LitImage(
+                        imgSrc: AssetPaths.titleMgBase,
+                        color: orbColor,
+                        pulseEffect: _pulseEffect,
+                        lightAmt: _finalReceiveLightAmt,
+                      ),
+
+                      /// Mg-Receive
+                      _LitImage(
+                        imgSrc: AssetPaths.titleMgReceive,
+                        color: orbColor,
+                        pulseEffect: _pulseEffect,
+                        lightAmt: _finalReceiveLightAmt,
+                      ),
+
+                      /// Mg-Emit
+                      _LitImage(
+                        imgSrc: AssetPaths.titleMgEmit,
+                        color: emitColor,
+                        pulseEffect: _pulseEffect,
+                        lightAmt: _finalEmitLightAmt,
+                      ),
+
+                      /// Particle Field
+                      Positioned.fill(
+                        child: IgnorePointer(
+                          child: ParticleOverlay(
+                            color: orbColor,
+                            energy: _orbEnergy,
+                          ),
+                        ),
+                      ),
+
+                      /// Fg-Rocks
+                      Image.asset(AssetPaths.titleFgBase),
+
+                      /// Fg-Receive
+                      _LitImage(
+                        imgSrc: AssetPaths.titleFgReceive,
+                        color: orbColor,
+                        pulseEffect: _pulseEffect,
+                        lightAmt: _finalReceiveLightAmt,
+                      ),
+
+                      /// Fg-Emit
+                      _LitImage(
+                        imgSrc: AssetPaths.titleFgEmit,
+                        color: emitColor,
+                        pulseEffect: _pulseEffect,
+                        lightAmt: _finalEmitLightAmt,
+                      ),
+
+                      /// UI
+                      Positioned.fill(
+                        child: TitleScreenUi(
+                          difficulty: _difficulty,
+                          onDifficultyFocused: _handleDifficultyFocused,
+                          onDifficultyPressed: _handleDifficultyPressed,
+                          onStartPressed: _handleStartPressed,
+                        ),
+                      ),
+                    ],
+                  ).animate().fadeIn(duration: 1.seconds, delay: .3.seconds));
             },
           ),
         ),
@@ -268,7 +341,9 @@ class _LitImage extends StatelessWidget {
       builder: (context, child) {
         return Image.asset(
           imgSrc,
-          color: hsl.withLightness(hsl.lightness * lightAmt).toColor(),
+          color: hsl
+              .withLightness((hsl.lightness * lightAmt) )
+              .toColor(),
           colorBlendMode: BlendMode.modulate,
         );
       },

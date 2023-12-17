@@ -8,8 +8,10 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:focusable_control_builder/focusable_control_builder.dart';
 import 'package:gap/gap.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../assets.dart';
+import '../common/responsive.dart';
 import '../common/shader_effect.dart';
 import '../common/ticking_builder.dart';
 import '../common/ui_scaler.dart';
@@ -33,40 +35,72 @@ class TitleScreenUi extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 50),
-      child: Stack(
-        children: [
-          /// Title Text
-          const TopLeft(
-            child: UiScaler(
-              alignment: Alignment.topLeft,
-              child: _TitleText(),
-            ),
-          ),
-
-          /// Difficulty Btns
-          BottomLeft(
-            child: UiScaler(
-              alignment: Alignment.bottomLeft,
-              child: _DifficultyBtns(
-                difficulty: difficulty,
-                onDifficultyPressed: onDifficultyPressed,
-                onDifficultyFocused: onDifficultyFocused,
+      child: Responsive(
+          smallScreen: Stack(
+            children: [
+              const _TitleText(),
+              BottomLeft(
+                child: UiScaler(
+                  alignment: Alignment.bottomCenter,
+                  child: _DifficultyBtns(
+                    difficulty: difficulty,
+                    onDifficultyPressed: onDifficultyPressed,
+                    onDifficultyFocused: onDifficultyFocused,
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
-
-          /// StartBtn
-          BottomRight(
-            child: UiScaler(
-              alignment: Alignment.bottomRight,
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 20, right: 40),
-                child: _StartBtn(onPressed: onStartPressed),
+          bigScreen: Stack(
+            children: [
+              /// Title Text
+              const TopLeft(
+                child: UiScaler(
+                  alignment: Alignment.topLeft,
+                  child: _TitleText(),
+                ),
               ),
-            ),
-          ),
-        ],
-      ),
+
+              /// Difficulty Btns
+              BottomLeft(
+                child: UiScaler(
+                  alignment: Alignment.bottomLeft,
+                  child: _DifficultyBtns(
+                    difficulty: difficulty,
+                    onDifficultyPressed: onDifficultyPressed,
+                    onDifficultyFocused: onDifficultyFocused,
+                  ),
+                ),
+              ),
+
+              /// StartBtn
+              BottomRight(
+                child: UiScaler(
+                  alignment: Alignment.bottomRight,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 20, right: 40),
+                    child: _StartBtn(onPressed: () async {
+                      final Uri emailLaunchUri = Uri(
+                          scheme: 'mailto',
+                          path: AssetPaths
+                              .contactMeLink, // Replace with recipient's email address
+                          queryParameters: {
+                            'subject': '', // Subject of the email
+                            'body': '' // Body of the email
+                          });
+
+                      if (await canLaunchUrl(emailLaunchUri)) {
+                        await launchUrl(emailLaunchUri);
+                      } else {
+                        throw 'Could not launch $emailLaunchUri';
+                      }
+                      onStartPressed();
+                    }),
+                  ),
+                ),
+              ),
+            ],
+          )),
     );
   }
 }
@@ -78,22 +112,49 @@ class _TitleText extends StatelessWidget {
   Widget build(BuildContext context) {
     Widget content = Column(
       mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: SizeConfig(context).isSmallScreen
+          ? CrossAxisAlignment.center
+          : CrossAxisAlignment.start,
       children: [
         const Gap(20),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Transform.translate(
-              offset: Offset(-(TextStyles.h1.letterSpacing! * .5), 0),
-              child: Text('OUTPOST', style: TextStyles.h1),
-            ),
-            Image.asset(AssetPaths.titleSelectedLeft, height: 65),
-            Text('57', style: TextStyles.h2),
-            Image.asset(AssetPaths.titleSelectedRight, height: 65),
-          ],
-        ).animate().fadeIn(delay: .8.seconds, duration: .7.seconds),
-        Text('INTO THE UNKNOWN', style: TextStyles.h3)
+        SizeConfig(context).isSmallScreen
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    AssetPaths.name,
+                    style: TextStyles.h3,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset(AssetPaths.titleSelectedLeft, height: 45),
+                      Text(AssetPaths.age, style: TextStyles.h3),
+                      Image.asset(AssetPaths.titleSelectedRight, height: 45),
+                    ],
+                  ),
+                  const Gap(20)
+                ],
+              ).animate().fadeIn(delay: .8.seconds, duration: .7.seconds)
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Transform.translate(
+                    offset: Offset(-(TextStyles.h1.letterSpacing! * .5), 0),
+                    child: Text(
+                      AssetPaths.name,
+                      style: TextStyles.h1,
+                    ),
+                  ),
+                  Image.asset(AssetPaths.titleSelectedLeft, height: 65),
+                  Text(AssetPaths.age, style: TextStyles.h2),
+                  Image.asset(AssetPaths.titleSelectedRight, height: 65),
+                ],
+              ).animate().fadeIn(delay: .8.seconds, duration: .7.seconds),
+        Text(AssetPaths.title,
+                style: SizeConfig(context).isSmallScreen
+                    ? TextStyles.body
+                    : TextStyles.h3)
             .animate()
             .fadeIn(delay: 1.seconds, duration: .7.seconds),
       ],
@@ -142,27 +203,36 @@ class _DifficultyBtns extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         _DifficultyBtn(
-          label: 'Casual',
+          label: AssetPaths.btn1,
           selected: difficulty == 0,
-          onPressed: () => onDifficultyPressed(0),
+          onPressed: () {
+            launchUrl(Uri.parse(AssetPaths.btn1Link));
+            onDifficultyPressed(0);
+          },
           onHover: (over) => onDifficultyFocused(over ? 0 : null),
         )
             .animate()
             .fadeIn(delay: 1.3.seconds, duration: .35.seconds)
             .slide(begin: const Offset(0, .2)),
         _DifficultyBtn(
-          label: 'Normal',
+          label: AssetPaths.btn2,
           selected: difficulty == 1,
-          onPressed: () => onDifficultyPressed(1),
+          onPressed: () {
+            launchUrl(Uri.parse(AssetPaths.btn2Link));
+            onDifficultyPressed(1);
+          },
           onHover: (over) => onDifficultyFocused(over ? 1 : null),
         )
             .animate()
             .fadeIn(delay: 1.5.seconds, duration: .35.seconds)
             .slide(begin: const Offset(0, .2)),
         _DifficultyBtn(
-          label: 'Hardcore',
+          label: AssetPaths.btn3,
           selected: difficulty == 2,
-          onPressed: () => onDifficultyPressed(2),
+          onPressed: () {
+            launchUrl(Uri.parse(AssetPaths.btn3Link));
+            onDifficultyPressed(2);
+          },
           onHover: (over) => onDifficultyFocused(over ? 2 : null),
         )
             .animate()
@@ -195,7 +265,7 @@ class _DifficultyBtn extends StatelessWidget {
         return Padding(
           padding: const EdgeInsets.all(8.0),
           child: SizedBox(
-            width: 250,
+            width: SizeConfig(context).isSmallScreen ? double.infinity : 250,
             height: 60,
             child: Stack(
               children: [
@@ -282,7 +352,7 @@ class _StartBtnState extends State<_StartBtn> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Text('START MISSION',
+                    Text(AssetPaths.contactMe,
                         style: TextStyles.btn
                             .copyWith(fontSize: 24, letterSpacing: 18)),
                   ],

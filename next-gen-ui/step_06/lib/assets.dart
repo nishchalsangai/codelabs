@@ -23,11 +23,36 @@ class AssetPaths {
   static const String titleSelectedRight = '$_images/select-right.png';
   static const String pulseParticle = '$_images/particle3.png';
 
+  //Icons To Change
+  static const String instaIcon = '$_images/instagram.png';
+  static const String githubIcon = '$_images/github.png';
+  static const String linkedInIcon = '$_images/linkedin.png';
+
+  //Texts To Change
+  static const String name = 'NISHCHAL';
+  static const String age = '23';
+  static const String title = 'SOFTWARE DEVELOPER';
+  static const String btn1 = 'GITHUB';
+  static const String btn2 = 'LINKEDIN';
+  static const String btn3 = 'INSTAGRAM';
+  static const String contactMe = 'CONTACT ME';
+  static const String btn1Link = 'https://github.com/nishchalsangai';
+  static const String btn2Link =
+      'https://www.linkedin.com/in/nishchal-sangai-53836b180/';
+  static const String btn3Link = 'https://www.instagram.com/nishchal.codes/';
+  static const String contactMeLink = 'sangainishchal@gmail.com';
+
   /// Shaders
   static const String _shaders = 'assets/shaders';
   static const String orbShader = '$_shaders/orb_shader.frag';
   static const String uiShader = '$_shaders/ui_glitch.frag';
 }
+
+List<String> imageAssets = [
+  AssetPaths.githubIcon,
+  AssetPaths.linkedInIcon,
+  AssetPaths.instaIcon
+];
 
 typedef FragmentPrograms = ({FragmentProgram orb, FragmentProgram ui});
 
